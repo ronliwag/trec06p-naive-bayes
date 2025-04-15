@@ -3,7 +3,7 @@ import re
 from config import *
 from collections import defaultdict
 
-def read_and_print_dataset(max_emails_to_print=5):
+def read_and_print_dataset():
     # Paths
     email_dir = DIR_DATA
     label_path = DIR_INDEX
@@ -32,14 +32,14 @@ def read_and_print_dataset(max_emails_to_print=5):
     print(f"Found {len(labels)} emails in labels file.")
     
     # Print sample labels
-    print("\n=== Sample Labels ===")
-    for i, (email_file, label) in enumerate(labels.items()):
-        if i >= max_emails_to_print:
-            break
-        print(f"{label.upper()}: {email_file}")
+    #print("\n=== Sample Labels ===")
+    #for i, (email_file, label) in enumerate(labels.items()):
+    #    if i >= len(labels):
+    #        break
+    #    print(f"{label.upper()}: {email_file}")
     
     # Read and print sample emails
-    print("\n=== Sample Emails ===")
+    #print("\n=== Sample Emails ===")
     email_count = 0
     email_strip = {}
     for email_file in labels.keys():
@@ -47,23 +47,16 @@ def read_and_print_dataset(max_emails_to_print=5):
         try:
             with open(email_path, 'r', encoding='latin-1') as f:
                 email_text = f.read()
-            print(f"\n--- {email_file} ({labels[email_file].upper()}) ---")
-            print(email_text[:500] + '...')  # Print first 500 chars to avoid clutter
             email_strip.update({email_file : email_text})
             email_count += 1
-            if email_count >= max_emails_to_print:
+            if email_count >= len(labels):
                 break
         except Exception as e:
             print(f"Error reading {email_file}: {str(e)}")
-    print("MARKER --------------------------------------------------------------------------------------------------------------------------------------\n")
-    print(email_strip)
-    print("\n\nProcessed -------------------------------------------------------------------------------------------------------------------------------\n")
     email_strip = extract_words(email_strip)
     keys = email_strip.keys()
-    for keys in email_strip:
-        print(keys + '\n')
-        print(email_strip[keys])
-        print('\n')
+    print("\n=== Processed Emails ===\n")
+    print(len(keys))
     
 def extract_words(email_strip):
     replace_with_space = '&<>.,:;_^-+=/\\*!"()}{?$#@|%\n\t'
