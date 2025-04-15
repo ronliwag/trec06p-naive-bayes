@@ -1,8 +1,9 @@
 import os
+import re
 from config import *
 from collections import defaultdict
 
-def read_and_print_dataset(max_emails_to_print=6):
+def read_and_print_dataset(max_emails_to_print=5):
     # Paths
     email_dir = DIR_DATA
     label_path = DIR_INDEX
@@ -40,18 +41,43 @@ def read_and_print_dataset(max_emails_to_print=6):
     # Read and print sample emails
     print("\n=== Sample Emails ===")
     email_count = 0
+    email_strip = {}
     for email_file in labels.keys():
         email_path = os.path.join(email_dir, email_file)
         try:
             with open(email_path, 'r', encoding='latin-1') as f:
                 email_text = f.read()
             print(f"\n--- {email_file} ({labels[email_file].upper()}) ---")
-            print(email_text[:1000] + "...")  # Print first 1000 chars to avoid clutter
+            print(email_text[:500] + '...')  # Print first 500 chars to avoid clutter
+            email_strip.update({email_file : email_text})
             email_count += 1
             if email_count >= max_emails_to_print:
                 break
         except Exception as e:
             print(f"Error reading {email_file}: {str(e)}")
+    print("MARKER --------------------------------------------------------------------------------------------------------------------------------------\n")
+    print(email_strip)
+    print("\n\nProcessed -------------------------------------------------------------------------------------------------------------------------------\n")
+    email_strip = extract_words(email_strip)
+    keys = email_strip.keys()
+    for keys in email_strip:
+        print(keys + '\n')
+        print(email_strip[keys])
+        print('\n')
+    
+def extract_words(email_strip):
+    replace_with_space = '&<>.,:;_^-+=/\\*!"()}{?$#@|%\n\t'
+    remove_completely = '0123456789'
+    
+    space_table = str.maketrans(replace_with_space, ' ' * len(replace_with_space))
+    remove_table = str.maketrans('', '', remove_completely)
+    
+    for index, text in email_strip.items():
+        text = text.translate(space_table)
+        text = text.translate(remove_table)
+        text = text.lower().split()
+        email_strip[index] = text
+    return email_strip
 
 if __name__ == "__main__":
     read_and_print_dataset()
