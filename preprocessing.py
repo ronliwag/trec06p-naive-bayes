@@ -1,7 +1,6 @@
 #cleans each email down to the tokenized unique words for each email body stored in an array
 
 import os
-import re
 import nltk
 from nltk.corpus import stopwords
 from config import *
@@ -34,7 +33,7 @@ def extract_email_body(raw_email):
         print(f"Email parsing error: {str(e)}")
         return raw_email  # Fallback to original text
 
-def read_and_print_dataset(max_emails_to_print=5): #remove parameter to remove limit
+def read_and_print_dataset(): #remove parameter to remove limit
     # Paths
     email_dir = DIR_DATA
     label_path = DIR_INDEX
@@ -61,7 +60,6 @@ def read_and_print_dataset(max_emails_to_print=5): #remove parameter to remove l
                 print(f"Skipping malformed line: {line}")
     
     # Read and print sample emails
-    print("\n=== Sample Emails ===")
     email_count = 0
     email_strip = {}
     for email_file in labels.keys():
@@ -70,22 +68,22 @@ def read_and_print_dataset(max_emails_to_print=5): #remove parameter to remove l
             with open(email_path, 'r', encoding='latin-1') as f:
                 email_text = f.read()
             body_text = extract_email_body(email_text)
-            print(f"\n--- {email_file} ({labels[email_file].upper()}) ---")
-            print(email_text)
             email_strip.update({email_file : body_text})
             email_count += 1
-            if email_count >= max_emails_to_print: #replace with len(labels) to remove limit
+            if email_count >= len(labels): #replace with len(labels) to remove limit
                 break
         except Exception as e:
             print(f"Error reading {email_file}: {str(e)}")
     
-    print("\n\nProcessed (word separation, unique word filter)-------------------------------------------------------------------------------------------------------------------------------\n")
-    email_strip = extract_words(email_strip)
+    #preprocessing part
+    filtered_emails = extract_words(email_strip)
     keys = email_strip.keys()
-    for keys in email_strip:
+    
+    return filtered_emails, labels
+    '''for keys in email_strip:
         print(keys + ' (' + labels[keys] + ')\n')
         print(email_strip[keys])
-        print('\n')
+        print('\n')'''
     
 def extract_words(email_strip, remove_stopwords=True):
     replace_with_space = ['&', '<', '>', '.', ',', ':', ';', '_', '^', '-', '+', '=', '/', '\\', '*', '!', '\'', '"', '(', ')', '[', ']', '}', '{', '?', '$', '#', '@', '|', '%', '\n', '\t']
