@@ -47,7 +47,7 @@ def count_statistics():
     print(f"n(ham) = {ham_word_count}")
     print(f"n(total) = {total_word_count}")
     print(f"P(spam) = {round(spam_prior, 6)}")
-    print(f"P(hpam) = {round(ham_prior, 6)}")
+    print(f"P(ham) = {round(ham_prior, 6)}")
     print(f"Execution time: {time.time() - start_time:.2f} seconds")
     print('\n')
     
