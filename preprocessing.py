@@ -2,11 +2,14 @@
 
 import os
 import nltk
+import re
 from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 from config import *
 from collections import defaultdict
 from email import message_from_string
 
+_HTML_TAG_PATTERN = re.compile(r'<.*?>')
 
 def extract_email_body(raw_email):
     try:
@@ -33,10 +36,10 @@ def extract_email_body(raw_email):
         print(f"Email parsing error: {str(e)}")
         return raw_email  # Fallback to original text
 
-def read_and_print_dataset(): #remove parameter to remove limit
+def preprocess_dataset(dir_index=DIR_INDEX): 
     # Paths
     email_dir = DIR_DATA
-    label_path = DIR_INDEX
+    label_path = dir_index
     
     # Check if paths exist
     if not os.path.exists(email_dir):
@@ -55,11 +58,11 @@ def read_and_print_dataset(): #remove parameter to remove limit
                 continue
             try:
                 label, email_file = line.split()
-                labels[email_file] = label
+                labels[email_file] = 1 if label.lower() == 'spam' else 0  # Convert to 0/1
             except ValueError:
                 print(f"Skipping malformed line: {line}")
     
-    # Read and print sample emails
+    # Read sample emails
     email_count = 0
     email_strip = {}
     for email_file in labels.keys():
@@ -76,19 +79,14 @@ def read_and_print_dataset(): #remove parameter to remove limit
             print(f"Error reading {email_file}: {str(e)}")
     
     #preprocessing part
-    filtered_emails = extract_words(email_strip)
     keys = email_strip.keys()
+    filtered_emails = {}
+    for key in keys:
+        filtered_emails.update({key : extract_words(email_strip[key])})
     
     return filtered_emails, labels
-    '''for keys in email_strip:
-        print(keys + ' (' + labels[keys] + ')\n')
-        print(email_strip[keys])
-        print('\n')'''
     
-def extract_words(email_strip, remove_stopwords=True):
-    replace_with_space = ['&', '<', '>', '.', ',', ':', ';', '_', '^', '-', '+', '=', '/', '\\', '*', '!', '\'', '"', '(', ')', '[', ']', '}', '{', '?', '$', '#', '@', '|', '%', '\n', '\t']
-    remove_completely = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-    
+def extract_words(email_body, remove_stopwords=True):
     # Common email headers that might slip through
     email_artifacts = {'received', 'content', 'type', 'mime', 'version', 'message', 'id', 
                       'subject', 'date', 'from', 'to', 'cc', 'bcc', 'return', 'path'}
@@ -96,23 +94,16 @@ def extract_words(email_strip, remove_stopwords=True):
     stop_words = set()
     if remove_stopwords:
         stop_words = set(stopwords.words('english'))
-        stop_words.update(email_artifacts)  # Add email-specific words to remove
     
-    for index, text in email_strip.items():
-        for char in replace_with_space:
-            text = text.replace(char, ' ')
-        
-        for char in remove_completely:
-            text = text.replace(char, '')
-        
-        words = [
-            word 
-            for word in text.lower().split() 
-            if (word not in stop_words) and (len(word) > 2)
-        ]
-        email_strip[index] = words
+    email_body = _HTML_TAG_PATTERN.sub('', email_body)
+
+    words = [
+        word.lower() 
+        for word in email_body.split() 
+        if (word.lower() not in stop_words) and (word.isalpha()) and (len(word) > 3)
+    ]
     
-    return email_strip
+    return words
 
 
 if __name__ == "__main__":
@@ -122,4 +113,4 @@ if __name__ == "__main__":
     except LookupError:
         nltk.download('stopwords')
     
-    read_and_print_dataset()
+    preprocess_dataset()
