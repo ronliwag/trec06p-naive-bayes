@@ -41,15 +41,6 @@ def count_statistics():
     spam_word_count = sum(spam_vocab.values())
     ham_word_count = sum(ham_vocab.values())
 
-    # Calculate word probabilities WITH LAPLACE SMOOTHING
-    spam_probs = {}
-    ham_probs = {}
-    alpha = 1  # Smoothing factor
-    
-    for word in all_words:
-        spam_probs[word] = (spam_vocab.get(word, 0) + alpha) / (spam_word_count + alpha * vocab_size)
-        ham_probs[word] = (ham_vocab.get(word, 0) + alpha) / (ham_word_count + alpha * vocab_size)
-
     # Print statistics
     print(f"\n=== Statistics ===")
     print(f"Spam emails: {len(spam_emails)}")
@@ -59,7 +50,7 @@ def count_statistics():
     print(f"P(ham): {ham_prior:.6f}")
     print(f"Execution time: {time.time() - start_time:.2f}s\n")
     
-    return spam_prior, ham_prior, spam_probs, ham_probs
+    return spam_vocab, ham_vocab, spam_word_count, ham_word_count, spam_prior, ham_prior
 
 if __name__ == "__main__":
-    spam_prior, ham_prior, spam_probs, ham_probs = count_statistics()
+    count_statistics()
